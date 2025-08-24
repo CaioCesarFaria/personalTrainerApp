@@ -12,8 +12,8 @@ import {
   Alert
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { auth } from "../../FirebaseConfig/FirebaseConfig";
-import { signOut } from "firebase/auth";
+import { useAuth } from "../../context/AuthContext"; // ✅ Usar o hook do AuthContext
+
 const { width } = Dimensions.get('window');
 
 const Colors = {
@@ -30,6 +30,7 @@ const Colors = {
 };
 
 const HomePersonal = ({ navigation }) => {
+  const { logout } = useAuth(); // ✅ Usar o logout do AuthContext
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState({
     activeStudents: 12,
@@ -37,35 +38,24 @@ const HomePersonal = ({ navigation }) => {
     totalExercises: 156,
     weeklyProgress: 85
   });
-  const handleLogout = () => {
-  Alert.alert(
-    'Sair',
-    'Tem certeza que deseja sair?',
-    [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Sair',
-        style: 'destructive',
-        onPress: () => {
-          signOut(auth)
-            .then(() => {
-              // Redireciona para a tela de login/home do estudante
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'HomeStudent' }],
-              });
-            })
-            .catch((error) => {
-              console.log('Erro ao deslogar:', error);
-              Alert.alert('Erro', 'Não foi possível sair. Tente novamente.');
-            });
-        },
-      },
-    ],
-    { cancelable: true }
-  );
-};
 
+  const handleLogout = () => {
+    Alert.alert(
+      'Sair',
+      'Tem certeza que deseja sair?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Sair',
+          style: 'destructive',
+          onPress: () => {
+            logout(); // ✅ O AuthContext vai cuidar da navegação automaticamente
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
 
   const [recentStudents] = useState([
     {
@@ -343,6 +333,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.textSecondary,
     marginTop: 4,
+  },
+  logoutButton: {
+    padding: 4,
   },
   profileButton: {
     padding: 4,

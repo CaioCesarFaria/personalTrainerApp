@@ -81,6 +81,8 @@ const StudentTabs = ({ user }) => (
 export default function AppNavigation() {
   const { user, role, loading } = useAuth();
 
+  console.log("AppNavigation - User:", !!user, "Role:", role, "Loading:", loading);
+
   if (loading) {
     return (
       <View style={styles.loaderContainer}>
@@ -92,20 +94,23 @@ export default function AppNavigation() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {/* HomeStudent sempre visível */}
-        <Stack.Screen name="HomeStudent">
-          {() => <StudentTabs user={user} />}
-        </Stack.Screen>
-
-        {!user && (
+        {/* 🔥 PERSONAL TRAINER - tem prioridade máxima */}
+        {user && role === "personal" ? (
+          <Stack.Screen name="HomePersonal" component={HomePersonal} />
+        ) : user && role === "student" ? (
+          /* 🔥 STUDENT LOGADO */
+          <Stack.Screen name="StudentTabs">
+            {() => <StudentTabs user={user} />}
+          </Stack.Screen>
+        ) : (
+          /* 🔥 NÃO LOGADO - tela pública */
           <>
+            <Stack.Screen name="HomeStudent">
+              {() => <StudentTabs user={null} />}
+            </Stack.Screen>
             <Stack.Screen name="Login" component={Login} />
             <Stack.Screen name="Register" component={Register} />
           </>
-        )}
-
-        {user && role === "personal" && (
-          <Stack.Screen name="HomePersonal" component={HomePersonal} />
         )}
       </Stack.Navigator>
     </NavigationContainer>
@@ -119,5 +124,3 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 });
-
-
