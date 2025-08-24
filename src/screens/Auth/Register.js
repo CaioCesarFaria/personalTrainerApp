@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "../../FirebaseConfig/FirebaseConfig";
 
 const Colors = {
@@ -107,11 +107,14 @@ const Register = ({ navigation }) => {
         weight: formData.weight,
         height: formData.height,
         objective: formData.objective,
-        createdAt: new Date(),
+        createdAt: serverTimestamp(),
       });
 
       Alert.alert("Sucesso!", "Conta criada com sucesso.");
-      navigation.navigate("Login");
+      navigation.reset({
+  index: 0,
+  routes: [{ name: "HomeStudent" }],
+});
 
     } catch (error) {
       console.log("Erro no cadastro:", error);

@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { auth } from "../../FirebaseConfig/FirebaseConfig";
-import { signOut } from "firebase/auth";
+import { signOut, onAuthStateChanged } from "firebase/auth";
 
 const { width } = Dimensions.get("window");
 
@@ -32,21 +32,25 @@ const Colors = {
 
 const HomeStudent = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
-  const [userName, setUserName] = useState("Usuário");
+  const [userName, setUserName] = useState("Visitante");
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Pegar usuário logado
-    const currentUser = auth.currentUser;
-    setUser(currentUser);
+    // Observa mudanças no estado do usuário
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        setUserName(
+          currentUser.displayName ||
+            currentUser.email?.split("@")[0] ||
+            "Usuário"
+        );
+      } else {
+        setUserName("Visitante");
+      }
+    });
 
-    if (currentUser) {
-      setUserName(
-        currentUser.displayName ||
-          currentUser.email?.split("@")[0] ||
-          "Usuário"
-      );
-    }
+    return () => unsubscribe();
   }, []);
 
   const onRefresh = React.useCallback(() => {
@@ -66,6 +70,8 @@ const HomeStudent = ({ navigation }) => {
         onPress: async () => {
           try {
             await signOut(auth);
+            setUser(null);
+            setUserName("Visitante");
           } catch (error) {
             Alert.alert("Erro", "Erro ao fazer logout");
           }
@@ -373,4 +379,3 @@ const styles = StyleSheet.create({
 });
 
 export default HomeStudent;
-
